@@ -29,7 +29,7 @@ Five stages, one file each:
 | 1. Load | `retrieval_app/corpus.py` | reads the `.txt` file into one string |
 | 2. Split | `retrieval_app/corpus.py` | cuts it into overlapping chunks (1,000 characters, 200 overlap) |
 | 3. Embed | `retrieval_app/index.py` | turns every chunk into a vector with `text-embedding-3-small`, in one API call |
-| 4. Search | `retrieval_app/index.py` | embeds the question, scores it against every chunk by cosine similarity, keeps the top `k` |
+| 4. Search | `retrieval_app/index.py` | embeds the question, scores it against every chunk by cosine similarity, keeps the top `k` (default 4) |
 | 5. Answer | `retrieval_app/answer.py` | sends the top chunks, labelled by chunk number, to `gpt-4.1-mini` with a prompt that says: answer only from this context, cite every fact, and decline if the answer isn't there |
 
 Every answer lists its sources with their scores, and a trace (chunk count, index time, token usage) goes to stderr, so you can always see which chunks an answer came from.
@@ -49,22 +49,28 @@ echo "OPENAI_API_KEY=sk-..." > .env    # your key; .env is gitignored
 
 ```bash
 uv run python -m retrieval_app "your question"
-uv run python -m retrieval_app "your question" -k 5              # retrieve 5 chunks instead of 3
+uv run python -m retrieval_app "your question" -k 5              # retrieve 5 chunks instead of 4
 uv run python -m retrieval_app "your question" --show-chunks     # print the retrieved text too
 uv run python -m retrieval_app "your question" --corpus data/other.txt   # if data/ holds more than one .txt
 ```
 
-`run_questions.py` runs a fixed set of 10 test questions and writes the answers, retrieved chunks and top-5 scores to a Markdown file, for before/after comparisons.
+`run_questions.py` runs a fixed set of 10 test questions and writes the answers, retrieved chunks and top-5 scores to a Markdown file, for before/after comparisons. It defaults to `-k 3` (the Step 3 setting), so pass `-k 4` to match the app: `uv run python run_questions.py -k 4 --out results_after.md`.
 
 ## What testing showed
 
-On the sample wellness guide, with 10 hand-written questions (simple lookups, questions whose answer is split across two places, and questions the text can't answer), it got 8/10 right:
+On the sample wellness guide, with 10 hand-written questions (simple lookups, questions whose answer is split across two places, and questions the text can't answer), it got 8/10 right with `k=3`:
 
 - **Both failures were retrieval:** the second half of the answer ranked 4th, just outside the top 3.
 - **All 3 unanswerable questions were declined correctly.** The strict prompt handled them, with no score cutoff needed.
 - **Cosine scores measure topic, not whether a chunk holds the answer.** An irrelevant chunk once scored 0.424 while a chunk with the right answer scored 0.354, so a single score threshold can't separate them.
 
-Details are in `step3_results.md`, and the change made in response is in `DECISIONS.md`.
+In response, `k` was raised from 3 to 4, which brought the score to **9/10**:
+
+- **The box-breathing question is fixed:** its missing chunk now comes back, and the model cites it instead of answering from its own knowledge.
+- **The screen-time question still fails, but at a different stage:** both facts now reach the model, and it reports only one. That's a generation problem, which a higher `k` can't fix.
+- **Regressions:** all 3 refusals now reword the exact decline sentence, and one answer cited a chunk it was never sent.
+
+Details are in `step3_results.md` (k=3) and `step4_results.md` (k=3 vs k=4), and the reasoning behind the change is in `DECISIONS.md`.
 
 ## Limitations (deliberate)
 

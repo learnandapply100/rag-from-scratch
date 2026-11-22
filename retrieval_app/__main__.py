@@ -41,7 +41,7 @@ def find_corpus() -> tuple[Path | None, list[Path]]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="retrieval_app", description=__doc__)
     parser.add_argument("question", help="the question to answer")
-    parser.add_argument("-k", type=int, default=3, help="how many chunks to retrieve (default: 3)")
+    parser.add_argument("-k", type=int, default=4, help="how many chunks to retrieve (default: 4)")
     parser.add_argument("--corpus", type=Path, default=None, help="the .txt file to search (default: the one in data/)")
     parser.add_argument("--show-chunks", action="store_true", help="print the retrieved text, not just the citations")
     args = parser.parse_args(argv)

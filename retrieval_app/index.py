@@ -100,7 +100,7 @@ def build_index(chunks: list[str]) -> np.ndarray:
     return embed_texts(chunks)
 
 
-def search(query: str, chunks: list[str], matrix: np.ndarray, k: int = 3) -> list[Hit]:
+def search(query: str, chunks: list[str], matrix: np.ndarray, k: int = 4) -> list[Hit]:
     """Find the k chunks most similar to the query.
 
     Args:
