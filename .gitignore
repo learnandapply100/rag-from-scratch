@@ -1,0 +1,16 @@
+# --- Secrets: never commit. Holds the real OpenAI API key. ---
+.env
+
+# --- Python / uv ---
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# --- macOS ---
+.DS_Store
+
+# --- Course material (not mine to publish) and personal notes ---
+Course-README.md
+My-Instructions.md
+My Notes.docx
