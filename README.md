@@ -22,7 +22,7 @@ Sources:
 
 ## How it works
 
-Five stages, one file each:
+Five stages, one file each (the full pipeline diagram, with the data type on every arrow, is in [`diagram.md`](diagram.md)):
 
 | Stage | File | What it does |
 |---|---|---|
